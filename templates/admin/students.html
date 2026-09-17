@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Admin | Students{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+{% block nav %}{% include "admin/_nav.html" %}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Students</h1>
+    <p class="muted">{{ students|length }} student{{ '' if students|length == 1 else 's' }} shown, including those who entered details but haven't finished a test.</p>
+  </div>
+  <div class="head-actions">
+    <a class="btn btn-primary" href="{{ url_for('export_students', **filters) }}">{% if filters.q or filters.department or filters.year %}Export filtered students (CSV){% else %}Export all students (CSV){% endif %}</a>
+  </div>
+</section>
+
+<form class="filters" method="get">
+  <input type="search" name="q" value="{{ filters.q }}" placeholder="Search by student name" aria-label="Search by student name">
+  <select name="department" aria-label="Department">
+    <option value="">All departments</option>
+    {% for dept in departments %}<option value="{{ dept }}" {% if filters.department == dept %}selected{% endif %}>{{ dept }}</option>{% endfor %}
+  </select>
+  <select name="year" aria-label="Year">
+    <option value="">All years</option>
+    {% for y in years %}<option value="{{ y }}" {% if filters.year == y %}selected{% endif %}>{{ y }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-ghost" type="submit">Apply filters</button>
+  {% if filters.q or filters.department or filters.year %}<a class="link-reset" href="{{ url_for('admin_students') }}">Clear</a>{% endif %}
+</form>
+
+<div class="table-wrap">
+  {% if students %}
+  <table class="table">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Department</th><th>Year</th><th>First visit</th><th class="num">Tests</th><th>Best</th><th>Average</th></tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td class="muted">{{ s.id }}</td>
+        <td><strong>{{ s.name }}</strong></td>
+        <td>{{ s.department }}</td>
+        <td class="nowrap">{{ s.year }}</td>
+        <td class="nowrap">{{ s.created_at|dt('%d %b %Y') }}</td>
+        <td class="num">{{ s.attempts }}</td>
+        <td>{{ s.best|pct }}</td>
+        <td>{{ s.average|pct }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <div class="empty"><p>No students match. Students appear here once they enter their details.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

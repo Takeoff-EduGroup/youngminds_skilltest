@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Engineering Skill Test{% endblock %}
+{% block body_class %}start-page{% endblock %}
+{% block content %}
+<section class="start">
+  <div class="start-intro">
+    <h1>Check where your skills stand in {{ minutes }} minutes.</h1>
+    <p class="lead">Free skill test for engineering students. No account needed.</p>
+
+    <ol class="steps">
+      <li><span class="bubble filled">1</span><div><strong>Enter your details</strong><span>Your name, department and year of study.</span></div></li>
+      <li><span class="bubble">2</span><div><strong>Choose a technology</strong><span>AI/ML, MERN, Web Development, VLSI, Simulink and more.</span></div></li>
+      <li><span class="bubble">3</span><div><strong>Answer {{ qcount }} questions</strong><span>See your score and every correct answer right away.</span></div></li>
+    </ol>
+  </div>
+
+  <div class="start-form">
+    <div class="auth-panel">
+      <h2>Your details</h2>
+      <p class="muted small">All fields are required.</p>
+
+      <form method="post" class="form" novalidate data-validate>
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+        <div class="field {% if errors.name %}has-error{% endif %}">
+          <label for="name">Full name</label>
+          <input id="name" name="name" type="text" autocomplete="name" required minlength="3" maxlength="120" value="{{ form.name or '' }}">
+          <small class="error-text">{{ errors.name or '' }}</small>
+        </div>
+
+        <div class="field-grid">
+          <div class="field {% if errors.department %}has-error{% endif %}">
+            <label for="department">Department</label>
+            <select id="department" name="department" required>
+              <option value="">Select</option>
+              {% for dept in departments %}
+                <option value="{{ dept }}" {% if form.department == dept %}selected{% endif %}>{{ dept }}</option>
+              {% endfor %}
+            </select>
+            <small class="error-text">{{ errors.department or '' }}</small>
+          </div>
+          <div class="field {% if errors.year %}has-error{% endif %}">
+            <label for="year">Year of study</label>
+            <select id="year" name="year" required>
+              <option value="">Select</option>
+              {% for y in years %}
+                <option value="{{ y }}" {% if form.year == y %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+            </select>
+            <small class="error-text">{{ errors.year or '' }}</small>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" type="submit">Continue to technologies</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

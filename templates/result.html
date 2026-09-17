@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Your {{ attempt.domain.short_name }} score{% endblock %}
+{% block content %}
+<section class="score-head">
+  <div class="score-figure {% if passed %}is-pass{% else %}is-low{% endif %}">
+    <span class="score-big">{{ attempt.score }}</span><span class="score-of">/ {{ attempt.total }}</span>
+  </div>
+  <div class="score-text">
+    <h1>{{ attempt.domain.name }}</h1>
+    <p class="verdict">
+      {% if attempt.percentage >= 80 %}Excellent work. You have a strong command of this technology.
+      {% elif passed %}Good result. Review the questions you missed to strengthen weak spots.
+      {% else %}Below the {{ pass_mark }}% mark. Go through the review below, then retake the test.{% endif %}
+    </p>
+    <dl class="score-stats">
+      <div><dt>Percentage</dt><dd>{{ attempt.percentage|pct }}</dd></div>
+      <div><dt>Correct</dt><dd>{{ attempt.score }}</dd></div>
+      <div><dt>Wrong</dt><dd>{{ attempt.total - attempt.score - unanswered }}</dd></div>
+      <div><dt>Unanswered</dt><dd>{{ unanswered }}</dd></div>
+      <div><dt>Time taken</dt><dd>{{ attempt.time_taken|mmss }}</dd></div>
+    </dl>
+    <div class="actions">
+      <a class="btn btn-primary" href="{{ url_for('quiz', slug=attempt.domain.slug) }}">Retake test</a>
+      <a class="btn btn-ghost" href="{{ url_for('technologies') }}">Choose another technology</a>
+    </div>
+  </div>
+</section>
+
+<section class="review">
+  <h2>Answer review</h2>
+  <ol class="review-list">
+    {% for item in review %}
+    {% set ok = item.chosen == item.correct %}
+    <li class="review-item {% if ok %}is-correct{% elif not item.chosen %}is-skipped{% else %}is-wrong{% endif %}">
+      <div class="review-q">
+        <span class="q-num">Question {{ loop.index }}</span>
+        <span class="review-status">{% if ok %}Correct{% elif not item.chosen %}Not answered{% else %}Wrong{% endif %}</span>
+      </div>
+      <p class="q-text">{{ item.question }}</p>
+      <ul class="review-options">
+        {% for letter, text in item.options.items() %}
+          <li class="{% if letter == item.correct %}opt-correct{% elif letter == item.chosen %}opt-wrong{% endif %}">
+            <span class="bubble">{{ letter }}</span>
+            <span>{{ text }}</span>
+            {% if letter == item.chosen %}<em class="tag">Your answer</em>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

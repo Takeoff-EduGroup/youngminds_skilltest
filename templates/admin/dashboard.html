@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Admin | Test results{% endblock %}
+{% block body_class %}admin-page{% endblock %}
+{% block nav %}{% include "admin/_nav.html" %}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Test results</h1>
+    <p class="muted">Every submitted test with the details the student entered.</p>
+  </div>
+  <div class="head-actions">
+    <a class="btn btn-primary" href="{{ url_for('export_results', **filters) }}">
+      {% if filters.q or filters.department or filters.year or filters.domain %}Export filtered results (CSV){% else %}Export all results (CSV){% endif %}
+    </a>
+  </div>
+</section>
+
+<section class="summary-strip">
+  <div><span class="sum-value">{{ summary.students }}</span><span class="sum-label">Students</span></div>
+  <div><span class="sum-value">{{ summary.attempts }}</span><span class="sum-label">Tests submitted</span></div>
+  <div><span class="sum-value">{{ summary.average|pct }}</span><span class="sum-label">Average score</span></div>
+  <div><span class="sum-value">{{ summary.passed }}</span><span class="sum-label">Scored {{ pass_mark }}% or more</span></div>
+</section>
+
+<details class="domain-breakdown">
+  <summary>Scores by technology</summary>
+  <table class="table compact">
+    <thead><tr><th>Technology</th><th>Branch</th><th class="num">Tests</th><th>Average</th></tr></thead>
+    <tbody>
+      {% for d in by_domain %}
+      <tr>
+        <td>{{ d.short_name }}</td><td>{{ d.branch }}</td><td class="num">{{ d.attempts }}</td>
+        <td><span class="meter inline"><span style="width: {{ d.average or 0 }}%"></span></span> {{ d.average|pct }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</details>
+
+<form class="filters" method="get">
+  <input type="search" name="q" value="{{ filters.q }}" placeholder="Search by student name" aria-label="Search by student name">
+  <select name="department" aria-label="Department">
+    <option value="">All departments</option>
+    {% for dept in departments %}<option value="{{ dept }}" {% if filters.department == dept %}selected{% endif %}>{{ dept }}</option>{% endfor %}
+  </select>
+  <select name="year" aria-label="Year">
+    <option value="">All years</option>
+    {% for y in years %}<option value="{{ y }}" {% if filters.year == y %}selected{% endif %}>{{ y }}</option>{% endfor %}
+  </select>
+  <select name="domain" aria-label="Technology">
+    <option value="">All technologies</option>
+    {% for d in domains %}<option value="{{ d.slug }}" {% if filters.domain == d.slug %}selected{% endif %}>{{ d.short_name }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-ghost" type="submit">Apply filters</button>
+  {% if filters.q or filters.department or filters.year or filters.domain %}<a class="link-reset" href="{{ url_for('admin_dashboard') }}">Clear</a>{% endif %}
+</form>
+
+<div class="table-wrap">
+  {% if attempts %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th><th>Student</th><th>Department</th><th>Year</th>
+        <th>Technology</th><th class="num">Score</th><th>Percentage</th><th class="num">Time</th><th>Submitted</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in attempts %}
+      <tr>
+        <td class="muted">{{ a.id }}</td>
+        <td><strong>{{ a.name }}</strong></td>
+        <td>{{ a.department }}</td>
+        <td class="nowrap">{{ a.year }}</td>
+        <td>{{ a.short_name }}</td>
+        <td class="num"><strong>{{ a.score }}</strong>/{{ a.total }}</td>
+        <td><span class="pill {% if a.percentage|float >= pass_mark %}pill-pass{% else %}pill-low{% endif %}">{{ a.percentage|pct }}</span></td>
+        <td class="num">{{ a.time_taken|mmss }}</td>
+        <td class="nowrap">{{ a.submitted_at|dt }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <div class="empty">
+      {% if filters.q or filters.department or filters.year or filters.domain %}
+        <p>No results match these filters. <a href="{{ url_for('admin_dashboard') }}">Clear filters</a> to see all tests.</p>
+      {% else %}
+        <p>No tests have been submitted yet. Results appear here as soon as a student finishes a test.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Choose a technology{% endblock %}
+
+{% macro tech_row(d) %}
+  {% set b = best.get(d.id) %}
+  <li class="tech-row">
+    <div class="tech-info">
+      <h3>{{ d.name }}</h3>
+      <p>{{ d.description }}</p>
+    </div>
+    <div class="tech-meta">
+      {% if b is not none %}<span class="best">Best {{ b|pct }}</span>{% endif %}
+    </div>
+    <a class="btn {% if b is not none %}btn-ghost{% else %}btn-primary{% endif %}" href="{{ url_for('quiz', slug=d.slug) }}">
+      {% if b is not none %}Retake test{% else %}Start test{% endif %}
+    </a>
+  </li>
+{% endmacro %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Choose a technology, {{ student.name.split(' ')[0] }}</h1>
+    <p class="muted">{{ student.department }}, {{ student.year }} &nbsp;|&nbsp; {{ qcount }} questions, {{ minutes }}-minute timer. Unanswered questions score zero.</p>
+  </div>
+  <a class="link-reset" href="{{ url_for('index') }}">Edit my details</a>
+</section>
+
+<div class="home-grid">
+  <div>
+    <section class="tech-group">
+      <h2><span class="branch-code">{{ my_branch }}</span> Recommended for your department</h2>
+      <ul class="tech-list">
+        {% for d in recommended %}{{ tech_row(d) }}{% endfor %}
+      </ul>
+    </section>
+
+    {% if others %}
+    <details class="tech-group other-group">
+      <summary><h2>Other branches</h2><span class="muted small">{{ others|length }} more technologies</span></summary>
+      <ul class="tech-list">
+        {% for d in others %}{{ tech_row(d) }}{% endfor %}
+      </ul>
+    </details>
+    {% endif %}
+  </div>
+
+  <aside class="history">
+    <h2>Your scores</h2>
+    {% if recent %}
+      <ol class="history-list">
+        {% for a in recent %}
+        <li>
+          <a href="{{ url_for('result', attempt_id=a.id) }}">
+            <span class="h-name">{{ a.short_name }}</span>
+            <span class="h-score">{{ a.score }}/{{ a.total }}</span>
+            <span class="h-date">{{ a.submitted_at|dt }}</span>
+            <span class="meter"><span style="width: {{ a.percentage }}%"></span></span>
+          </a>
+        </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="muted">Scores from this visit appear here after you finish a test.</p>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}
